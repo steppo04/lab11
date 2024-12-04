@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,8 +41,35 @@ public final class LambdaFilter extends JFrame {
         /**
          * Commands.
          */
-        IDENTITY("No modifications", Function.identity());
-
+        IDENTITY("No modifications", Function.identity()),
+        LOWERCASE("to lower case", String::toLowerCase),
+        COUNTCHARS("count chars", new Function<>() {
+            @Override
+            public String apply(final String s) {
+                return Integer.toString(s.length());
+            }
+        }
+        ),
+        COUNTLINES("count lines", new Function<>() {
+            @Override
+            public String apply(final String s) {
+                return Long.toString(s.lines().count());
+            }
+        }
+        ),
+        LISTWORDS("alfabetic order", new Function<>() {
+            @Override
+            public String apply(final String s) {
+                return Stream.of(s.split("\\s+")).sorted().collect(Collectors.joining(" "));
+        }
+    }),
+    WORDCOUNT("Count words", s ->
+            Arrays.stream(s.split("\\s+"))
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+            .entrySet().stream()
+            .map(e -> e.getKey() + " -> " + e.getValue())
+            .collect(Collectors.joining("\n"))
+        );
         private final String commandName;
         private final Function<String, String> fun;
 
@@ -60,7 +90,7 @@ public final class LambdaFilter extends JFrame {
 
     private LambdaFilter() {
         super("Lambda filter GUI");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // NOPMD
         final JPanel panel1 = new JPanel();
         final LayoutManager layout = new BorderLayout();
         panel1.setLayout(layout);
